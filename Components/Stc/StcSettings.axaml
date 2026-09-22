@@ -1,0 +1,125 @@
+<ci:ComponentBase x:Class="UMP.DlyStc.Plugin.Cld.Components.StcSettings"
+                   x:TypeArguments="local:StcConfig"
+                   xmlns="https://github.com/avaloniaui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                   xmlns:local="clr-namespace:UMP.DlyStc.Plugin.Cld.Components"
+                   xmlns:ci="http://classisland.tech/schemas/xaml/core"
+                   xmlns:converters="clr-namespace:UMP.DlyStc.Plugin.Cld.Shared.Converters"
+                   xmlns:fa="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+                   mc:Ignorable="d"
+                   d:DesignHeight="300" d:DesignWidth="300">
+    <ci:ComponentBase.Resources>
+        <converters:SeparateAttributesDisplayVisibilityConverter x:Key="AttributesDisplayVisibilityConverter"/>
+        <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+    </ci:ComponentBase.Resources>
+    <ScrollViewer
+        DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=local:StcSettings}}">
+        <StackPanel Classes="settings-container animated-intro">
+            <Border Background="#204169e1"
+                    CornerRadius="4"
+                    Margin="0 0 0 5">
+                <Grid>
+                    <DockPanel Margin="8 4">
+                        <ci:FluentIcon Glyph="&#xE9E3;"/>
+                        <TextBlock TextWrapping="Wrap"
+                                   VerticalAlignment="Center"
+                                   Margin="4 2 0 0">
+                            <Run>本组件展示的内容</Run><Bold>均由第三方服务商提供给你</Bold>
+                            <Run> 我们不对其内容做任何担保</Run>
+                        </TextBlock>
+                    </DockPanel>
+                </Grid>
+            </Border>
+            <fa:FASettingsExpander IconSource="{ci:FluentIconSource &#xEBFA;}" 
+                                       Header="额外信息展示方法"
+                                       Description="选择如何展示额外信息,没有则不展示">
+                <fa:FASettingsExpander.Footer>
+                    <Grid>
+                        <ComboBox
+                            MinWidth="20"
+                            SelectedItem="{Binding Settings.AttributesRule}"
+                            ItemsSource="{Binding AttributesRules}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                </fa:FASettingsExpander.Footer>
+            </fa:FASettingsExpander>
+            <fa:FASettingsExpander IconSource="{ci:FluentIconSource &#xEC0C;}"
+                                       Header="展示作者"
+                                       Description="将作者作为额外信息展示,未获取到则不显示">
+                <fa:FASettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Settings.IsAuthorShowEnabled, Mode=TwoWay}"/>
+                </fa:FASettingsExpander.Footer>
+            </fa:FASettingsExpander>
+            <fa:FASettingsExpander IconSource="{ci:FluentIconSource &#xEC08;}"
+                                       Header="展示出处"
+                                       Description="将出处作为额外信息展示,未获取到则不显示">
+                <fa:FASettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Settings.IsTitleShowEnabled, Mode=TwoWay}"/>
+                </fa:FASettingsExpander.Footer>
+            </fa:FASettingsExpander>
+            <fa:FASettingsExpander IconSource="{ci:FluentIconSource &#xEE39;}"
+                                       IsVisible="{Binding Settings.AttributesRule, Converter={StaticResource AttributesDisplayVisibilityConverter}, Mode=OneWay}"
+                                       Header="额外信息展示时长"
+                                       Description="设置额外信息被展示的时长">
+                <fa:FASettingsExpander.Footer>
+                    <Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <NumericUpDown
+                                Value="{Binding Settings.AttributesShowingInterval, Mode=TwoWay}"
+                                VerticalAlignment="Center"
+                                FormatString="0"
+                                Minimum="0"
+                                InputMethod.IsInputMethodEnabled="False"
+                                MinWidth="30"/>
+                        </StackPanel>
+                    </Grid>
+                </fa:FASettingsExpander.Footer>
+            </fa:FASettingsExpander>
+            <fa:FASettingsExpander IconSource="{ci:FluentIconSource &#xE051;}"
+                                       Header="启用动画"
+                                       Description="禁用后,将不再播放动画,对低性能设备友好!">
+                <fa:FASettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Settings.IsAnimationEnabled, Mode=TwoWay}"/>
+                </fa:FASettingsExpander.Footer>
+                <fa:FASettingsExpander.Items>
+                    <fa:FASettingsExpanderItem IconSource="{ci:FluentIconSource &#xE095;}"
+                                                    Content="启用翻页动画"
+                                                    Description="启用后,切换动画样式将被替换为翻页(额外信息不受影响)">
+                        <fa:FASettingsExpanderItem.Footer>
+                            <ToggleSwitch IsChecked="{Binding Settings.IsSwapAnimationEnabled, Mode=TwoWay}"/>
+                        </fa:FASettingsExpanderItem.Footer>
+                    </fa:FASettingsExpanderItem>
+                </fa:FASettingsExpander.Items>
+            </fa:FASettingsExpander>
+            <fa:FASettingsExpander IconSource="{ci:FluentIconSource &#xE3DA;}"
+                                       Header="排除列表"
+                                       Description="包含位于此列表中的字符串的内容更新将被忽略,一行一个;可从文本文件导入(文件不超过1MB,总计不超过5000条)">
+                <fa:FASettingsExpander.Footer>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Button Click="ImportIgnoreListButton_OnClick">
+                            <ci:FluentIcon Glyph="&#xE105;" Foreground="Gray" />
+                        </Button>
+                        <ci:FluentIcon Glyph="&#xEBD8;"/>
+                    </StackPanel>
+                </fa:FASettingsExpander.Footer>
+                    <TextBox Text="{Binding Settings.IgnoreListString}"
+                             Background="Transparent"
+                             AcceptsReturn="True"
+                             VerticalContentAlignment="Top"
+                             TextWrapping="Wrap"
+                             Margin="6,6,6,6"/>
+            </fa:FASettingsExpander>
+            <Label HorizontalAlignment="Center"
+                   Foreground="{DynamicResource MaterialDesignBodyLight}">
+                Added by UMP.DlyStc.Plugin.Cld
+            </Label>
+        </StackPanel>
+    </ScrollViewer>
+</ci:ComponentBase>
