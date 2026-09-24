@@ -3,10 +3,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace UMP.DlyStc.Plugin.Cld.Shared;
 
-/// <summary>
-/// Provides rhesis content from a single source.
-/// </summary>
-public interface IStcProvider {
+public interface IStcProvider
+{
     string Id { get; }
     string DisplayName { get; }
     string Description { get; }
@@ -19,41 +17,48 @@ public interface IStcProvider {
         CancellationToken cancellationToken = default);
 }
 
-/// <summary>
-/// Optionally lets a provider supply its own settings content.
-/// </summary>
-public interface IStcProviderSettingsFactory {
+public interface IStcProviderSettingsFactory
+{
     Control CreateSettingsControl(StcProviderConfig config);
 }
 
-public class StcProviderConfig : ObservableObject {
+public class StcProviderConfig : ObservableObject
+{
     bool _isEnabled;
     int _weight = 1;
-    Dictionary<string,string> _options = [];
+    Dictionary<string, string> _options = [];
 
-    public bool IsEnabled {
+    public bool IsEnabled
+    {
         get => _isEnabled;
-        set => SetProperty(ref _isEnabled,value);
+        set => SetProperty(ref _isEnabled, value);
     }
 
-    public int Weight {
+    public int Weight
+    {
         get => _weight;
-        set => SetProperty(ref _weight,Math.Max(0,value));
+        set => SetProperty(ref _weight, Math.Max(0, value));
     }
 
-    public Dictionary<string,string> Options {
+    public Dictionary<string, string> Options
+    {
         get => _options;
-        set => SetProperty(ref _options,value ?? []);
+        set => SetProperty(ref _options, value ?? []);
     }
 
-    public string GetOption(string key,string defaultValue = "") {
-        return Options.TryGetValue(key,out string? value) ? value : defaultValue;
+    public string GetOption(string key, string defaultValue = "")
+    {
+        return Options.TryGetValue(key, out string? value) ? value : defaultValue;
     }
 
-    public void SetOption(string key,string? value) {
-        if (string.IsNullOrEmpty(value)) {
+    public void SetOption(string key, string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
             Options.Remove(key);
-        } else {
+        }
+        else
+        {
             Options[key] = value;
         }
         OnPropertyChanged(nameof(Options));

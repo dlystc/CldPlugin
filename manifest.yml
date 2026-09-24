@@ -1,7 +1,7 @@
 id: ump.dlystc.plugin.cld
 name: 每日多言
 description: 每日多言插件 - 支持多个一言组件而且不冲突
-entranceAssembly: "StcPlugin.dll"
+entranceAssembly: "UMP.DlyStc.Plugin.Cld.dll"
 url: https://github.com/dlystc
 version: 1.0.0.0
 apiVersion: 2.0.0.0

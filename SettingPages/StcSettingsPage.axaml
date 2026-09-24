@@ -1,23 +1,22 @@
 <ci:SettingsPageBase x:Class="UMP.DlyStc.Plugin.Cld.SettingPages.StcSettingsPage"
-                   xmlns="https://github.com/avaloniaui"
-                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                   xmlns:ci="http://classisland.tech/schemas/xaml/core"
-                   xmlns:fa="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
-                   xmlns:settingPages="clr-namespace:UMP.DlyStc.Plugin.Cld.SettingPages"
-                   mc:Ignorable="d"
-                   d:DesignHeight="450" d:DesignWidth="800">
+                     xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                     xmlns:ci="http://classisland.tech/schemas/xaml/core"
+                     xmlns:fa="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+                     xmlns:settingPages="clr-namespace:UMP.DlyStc.Plugin.Cld.SettingPages"
+                     mc:Ignorable="d"
+                     d:DesignHeight="450" d:DesignWidth="800">
     <ScrollViewer DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=settingPages:StcSettingsPage}}">
         <StackPanel Classes="settings-container animated-intro">
-            <TextBlock Text="StcPlugin — 全局设置"
+            <TextBlock Text="全局设置"
                        FontSize="18" FontWeight="SemiBold"
                        Margin="8,12,8,4"/>
             <TextBlock TextWrapping="Wrap" Margin="8,0,8,12">
                 这些设置对所有名句一言组件全局生效。单个组件的显示设置（动画、作者出处等）请在组件设置中配置。
             </TextBlock>
 
-            <!-- Provider Settings -->
             <TextBlock Text="内容来源"
                        FontWeight="SemiBold"
                        Margin="4,8,4,4"/>
@@ -55,7 +54,6 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- Fetch interval -->
             <fa:FASettingsExpander IconSource="{ci:FluentIconSource &#xE8EF;}" 
                                        Header="获取间隔"
                                        Description="设定从 API 获取新内容的间隔,单位为秒">
@@ -72,7 +70,6 @@
                 </fa:FASettingsExpander.Footer>
             </fa:FASettingsExpander>
 
-            <!-- Length limitation -->
             <fa:FASettingsExpander IconSource="{ci:FluentIconSource &#xF321;}"
                                        Header="字数限制"
                                        Description="当字数大于该设置时不显示并重新获取,设为0即禁用">

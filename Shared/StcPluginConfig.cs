@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using System.IO;
-using System.Text.Json.Serialization;
 using ClassIsland.Shared.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -38,7 +36,11 @@ public class StcPluginConfig : ObservableObject {
     }
 
     public void ForceSave() {
-        ConfigureFileHelper.SaveConfig(ConfigPath, this);
+        try {
+            ConfigureFileHelper.SaveConfig(ConfigPath, this);
+        } catch (Exception ex) {
+            System.Diagnostics.Debug.WriteLine($"Failed to force save StcPluginConfig: {ex.Message}");
+        }
     }
 
     void Save() {

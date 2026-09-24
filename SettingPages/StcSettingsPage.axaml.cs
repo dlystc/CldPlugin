@@ -6,11 +6,15 @@ using UMP.DlyStc.Plugin.Cld.Shared;
 
 namespace UMP.DlyStc.Plugin.Cld.SettingPages;
 
-[SettingsPageInfo("stc.master","每日多言 设置","\uE34C","\uE34D")]
-public partial class StcSettingsPage : SettingsPageBase {
-    public StcSettingsPage() {
+[SettingsPageInfo("stc.master", "每日多言 设置", "\uE34C", "\uE34D")]
+public partial class StcSettingsPage : SettingsPageBase
+{
+    public StcSettingsPage()
+    {
         Config = GlobalConstants.PluginConfig!;
+
         RefreshProviderItems();
+
         InitializeComponent();
     }
 
@@ -18,10 +22,14 @@ public partial class StcSettingsPage : SettingsPageBase {
 
     public ObservableCollection<StcProviderSettingsItem> ProviderItems { get; } = [];
 
-    void RefreshProviderItems() {
+    void RefreshProviderItems()
+    {
         Config.EnsureProviderSettings(StcHandler.Providers);
+
         ProviderItems.Clear();
-        foreach (IStcProvider provider in StcHandler.Providers) {
+        
+        foreach (IStcProvider provider in StcHandler.Providers)
+        {
             ProviderItems.Add(new StcProviderSettingsItem(
                 provider,
                 Config.ProviderSettings[provider.Id]));
@@ -29,7 +37,8 @@ public partial class StcSettingsPage : SettingsPageBase {
     }
 }
 
-public sealed class StcProviderSettingsItem(IStcProvider provider, StcProviderConfig configuration) {
+public sealed class StcProviderSettingsItem(IStcProvider provider, StcProviderConfig configuration)
+{
     public string Id { get; } = provider.Id;
     public string DisplayName { get; } = provider.DisplayName;
     public string Description { get; } = provider.Description;

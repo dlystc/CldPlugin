@@ -1,4 +1,3 @@
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
@@ -7,12 +6,13 @@ using Avalonia.Media;
 
 namespace UMP.DlyStc.Plugin.Cld.Shared;
 
-public sealed class HitokotoStcProvider : IStcProvider, IStcProviderSettingsFactory {
+public sealed class HitokotoStcProvider : IStcProvider, IStcProviderSettingsFactory, IDisposable
+{
     public const string ProviderId = "hitokoto";
     public const string QueryOption = "query";
 
-    static readonly HttpClient HttpClient = new HttpClient();
-    readonly SemaphoreSlim _requestLock = new SemaphoreSlim(1,1);
+    static readonly HttpClient HttpClient = new();
+    readonly SemaphoreSlim _requestLock = new(1, 1);
     DateTimeOffset _lastRequestAt = DateTimeOffset.MinValue;
 
     public string Id { get => ProviderId; }
@@ -28,46 +28,61 @@ public sealed class HitokotoStcProvider : IStcProvider, IStcProviderSettingsFact
     public async Task<StcData> FetchAsync(
         StcProviderConfig config,
         int lengthLimitation,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
         await _requestLock.WaitAsync(cancellationToken);
-        try {
+        try
+        {
             TimeSpan remaining = TimeSpan.FromMilliseconds(700) - (DateTimeOffset.UtcNow - _lastRequestAt);
-            if (remaining > TimeSpan.Zero) {
-                await Task.Delay(remaining,cancellationToken);
+            if (remaining > TimeSpan.Zero)
+            {
+                await Task.Delay(remaining, cancellationToken);
             }
             _lastRequestAt = DateTimeOffset.UtcNow;
-        } finally {
+        }
+        finally
+        {
             _requestLock.Release();
         }
 
         List<string> queryParts = [];
-        if (lengthLimitation > 0) {
+        if (lengthLimitation > 0)
+        {
             queryParts.Add($"max_length={lengthLimitation}");
         }
-        string customQuery = config.GetOption(QueryOption).Trim().TrimStart('?','&');
-        if (!string.IsNullOrWhiteSpace(customQuery)) {
+        string customQuery = config.GetOption(QueryOption).Trim().TrimStart('?', '&');
+        if (!string.IsNullOrWhiteSpace(customQuery))
+        {
             queryParts.Add(customQuery);
         }
 
         string requestUrl = queryParts.Count == 0
             ? "https://v1.hitokoto.cn/"
-            : $"https://v1.hitokoto.cn/?{string.Join("&",queryParts)}";
-        HitokotoData data = await HttpClient.GetFromJsonAsync<HitokotoData>(requestUrl,cancellationToken)
+            : $"https://v1.hitokoto.cn/?{string.Join("&", queryParts)}";
+        HitokotoData data = await HttpClient.GetFromJsonAsync<HitokotoData>(requestUrl, cancellationToken)
             ?? throw new InvalidOperationException("一言 API 返回了空响应。");
         return data.ToStcData();
     }
 
-    public Control CreateSettingsControl(StcProviderConfig config) {
-        TextBox queryTextBox = new TextBox {
+    public void Dispose()
+    {
+        _requestLock?.Dispose();
+    }
+
+    public Control CreateSettingsControl(StcProviderConfig config)
+    {
+        TextBox queryTextBox = new()
+        {
             Text = config.GetOption(QueryOption),
             PlaceholderText = "例如：c=i&c=k",
             MinWidth = 180
         };
-        queryTextBox.TextChanged += (_,_) => config.SetOption(QueryOption,queryTextBox.Text);
+        queryTextBox.TextChanged += (_, _) => config.SetOption(QueryOption, queryTextBox.Text);
 
-        return new StackPanel {
+        return new StackPanel
+        {
             Spacing = 6,
-            Margin = new Avalonia.Thickness(12,6),
+            Margin = new Avalonia.Thickness(12, 6),
             Children = {
                 new TextBlock {
                     Text = "附加查询参数（不含“?”）。全局字数限制会自动转换为 max_length 参数。",
@@ -80,10 +95,11 @@ public sealed class HitokotoStcProvider : IStcProvider, IStcProviderSettingsFact
     }
 }
 
-public sealed class DlystcStcProvider : IStcProvider {
+public sealed class DlystcStcProvider : IStcProvider
+{
     public const string ProviderId = "dlystc";
 
-    static readonly HttpClient HttpClient = new HttpClient();
+    static readonly HttpClient HttpClient = new();
 
     public string Id { get => ProviderId; }
 
@@ -92,20 +108,23 @@ public sealed class DlystcStcProvider : IStcProvider {
     public string Description { get => "来自 dlystc API。"; }
 
     public bool IsEnabledByDefault { get => true; }
-    public int DefaultWeight { get => 1; }
+    public int DefaultWeight { get => 2; }
 
     public async Task<StcData> FetchAsync(
         StcProviderConfig config,
         int lengthLimitation,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
         const string requestUrl = "https://dlystc.unknownmp.top/api/v2/sentence";
         DlystcData data = await HttpClient.GetFromJsonAsync<DlystcData>(requestUrl, cancellationToken)
             ?? throw new InvalidOperationException("dlystc API 返回了空响应。");
+
         return data.ToStcData();
     }
 }
 
-internal sealed class DlystcData {
+internal sealed class DlystcData
+{
     [JsonPropertyName("content")]
     public string Content { get; set; } = string.Empty;
 
@@ -118,8 +137,10 @@ internal sealed class DlystcData {
     [JsonPropertyName("created_at")]
     public string CreatedAt { get; set; } = string.Empty;
 
-    public StcData ToStcData() {
-        return new StcData {
+    public StcData ToStcData()
+    {
+        return new StcData
+        {
             Author = Author,
             Title = Source,
             Content = Content,
@@ -129,10 +150,11 @@ internal sealed class DlystcData {
     }
 }
 
-public sealed class JinrishiciStcProvider : IStcProvider {
+public sealed class JinrishiciStcProvider : IStcProvider
+{
     public const string ProviderId = "jinrishici";
 
-    static readonly HttpClient HttpClient = new HttpClient();
+    static readonly HttpClient HttpClient = new();
 
     public string Id { get => ProviderId; }
     public string DisplayName { get => "今日诗词"; }
@@ -143,15 +165,17 @@ public sealed class JinrishiciStcProvider : IStcProvider {
     public async Task<StcData> FetchAsync(
         StcProviderConfig config,
         int lengthLimitation,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
         const string requestUrl = "https://v1.jinrishici.com/all.json";
-        JinrishiciData data = await HttpClient.GetFromJsonAsync<JinrishiciData>(requestUrl,cancellationToken)
+        JinrishiciData data = await HttpClient.GetFromJsonAsync<JinrishiciData>(requestUrl, cancellationToken)
             ?? throw new InvalidOperationException("今日诗词 API 返回了空响应。");
         return data.ToStcData();
     }
 }
 
-public sealed class SainticStcProvider : IStcProvider, IStcProviderSettingsFactory {
+public sealed class SainticStcProvider : IStcProvider, IStcProviderSettingsFactory
+{
     public const string ProviderId = "saintic";
     public const string PathOption = "path";
 
@@ -166,32 +190,38 @@ public sealed class SainticStcProvider : IStcProvider, IStcProviderSettingsFacto
     public async Task<StcData> FetchAsync(
         StcProviderConfig config,
         int lengthLimitation,
-        CancellationToken cancellationToken = default) {
-        string path = config.GetOption(PathOption,"all").Trim().Trim('/').TrimEnd('.');
-        if (path.EndsWith(".json",StringComparison.OrdinalIgnoreCase)) {
+        CancellationToken cancellationToken = default)
+    {
+        string path = config.GetOption(PathOption, "all").Trim().Trim('/').TrimEnd('.');
+        if (path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        {
             path = path[..^5];
         }
-        if (string.IsNullOrWhiteSpace(path)) {
+        if (string.IsNullOrWhiteSpace(path))
+        {
             path = "all";
         }
 
         string requestUrl = $"https://hub.saintic.com/openservice/sentence/{path}.json";
-        SainticData data = await HttpClient.GetFromJsonAsync<SainticData>(requestUrl,cancellationToken)
+        SainticData data = await HttpClient.GetFromJsonAsync<SainticData>(requestUrl, cancellationToken)
             ?? throw new InvalidOperationException("Saintic API 返回了空响应。");
         return data.ToStcData();
     }
 
-    public Control CreateSettingsControl(StcProviderConfig config) {
-        TextBox pathTextBox = new TextBox {
+    public Control CreateSettingsControl(StcProviderConfig config)
+    {
+        TextBox pathTextBox = new()
+        {
             Text = config.GetOption(PathOption),
             PlaceholderText = "all",
             MinWidth = 180
         };
-        pathTextBox.TextChanged += (_,_) => config.SetOption(PathOption,pathTextBox.Text);
+        pathTextBox.TextChanged += (_, _) => config.SetOption(PathOption, pathTextBox.Text);
 
-        return new StackPanel {
+        return new StackPanel
+        {
             Spacing = 6,
-            Margin = new Avalonia.Thickness(12,6),
+            Margin = new Avalonia.Thickness(12, 6),
             Children = {
                 new TextBlock {
                     Text = "接口路径：https://hub.saintic.com/openservice/sentence/{路径}.json",
@@ -203,14 +233,16 @@ public sealed class SainticStcProvider : IStcProvider, IStcProviderSettingsFacto
         };
     }
 
-    static HttpClient CreateHttpClient() {
-        HttpClient client = new HttpClient();
+    static HttpClient CreateHttpClient()
+    {
+        HttpClient client = new();
         client.DefaultRequestHeaders.UserAgent.Add(ProductInfoHeaderValue.Parse("UMP.DlyStc.Plugin.Cld/1.0"));
         return client;
     }
 }
 
-internal sealed class SainticData {
+internal sealed class SainticData
+{
     [JsonPropertyName("code")]
     public int StatusCode { get; set; } = -1;
 
@@ -223,8 +255,10 @@ internal sealed class SainticData {
     [JsonPropertyName("remark")]
     public RemarkData Remark { get; set; } = new RemarkData();
 
-    public StcData ToStcData() {
-        return new StcData {
+    public StcData ToStcData()
+    {
+        return new StcData
+        {
             Author = Data.Author,
             Title = Data.Name,
             Content = Data.Sentence,
@@ -233,7 +267,8 @@ internal sealed class SainticData {
         };
     }
 
-    internal sealed class SainticStcData {
+    internal sealed class SainticStcData
+    {
         [JsonPropertyName("author")]
         public string Author { get; set; } = string.Empty;
 
@@ -268,14 +303,16 @@ internal sealed class SainticData {
         public string ThemePinyin { get; set; } = string.Empty;
     }
 
-    internal sealed class RemarkData {
+    internal sealed class RemarkData
+    {
         [JsonPropertyName("q")]
         public QueueInfoData QueueInfo { get; set; } = new QueueInfoData();
 
         [JsonPropertyName("success")]
         public bool IsSuccess { get; set; }
 
-        internal sealed class QueueInfoData {
+        internal sealed class QueueInfoData
+        {
             [JsonPropertyName("author")]
             public string Author { get; set; } = string.Empty;
 
@@ -291,7 +328,8 @@ internal sealed class SainticData {
     }
 }
 
-internal sealed class JinrishiciData {
+internal sealed class JinrishiciData
+{
     [JsonPropertyName("content")]
     public string Content { get; set; } = string.Empty;
 
@@ -304,8 +342,10 @@ internal sealed class JinrishiciData {
     [JsonPropertyName("category")]
     public string Category { get; set; } = string.Empty;
 
-    public StcData ToStcData() {
-        return new StcData {
+    public StcData ToStcData()
+    {
+        return new StcData
+        {
             Author = Author,
             Title = Origin,
             Content = Content,
@@ -315,7 +355,8 @@ internal sealed class JinrishiciData {
     }
 }
 
-internal sealed class HitokotoData {
+internal sealed class HitokotoData
+{
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
@@ -352,8 +393,10 @@ internal sealed class HitokotoData {
     [JsonPropertyName("length")]
     public int Length { get; set; }
 
-    public StcData ToStcData() {
-        return new StcData {
+    public StcData ToStcData()
+    {
+        return new StcData
+        {
             Author = FromWho,
             Title = From,
             Content = Hitokoto,
@@ -362,8 +405,10 @@ internal sealed class HitokotoData {
         };
     }
 
-    static string ConvertTypeToString(string type) {
-        return type switch {
+    static string ConvertTypeToString(string type)
+    {
+        return type switch
+        {
             "a" => "动画",
             "b" => "漫画",
             "c" => "游戏",
